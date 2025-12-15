@@ -2,11 +2,7 @@
   "compilerOptions": {
     "esModuleInterop": true,
     "baseUrl": ".",
-    "paths": {
-      "@/*": [
-        "src/*"
-      ]
-    },
+    "paths": { "@/*": ["src/*"] },
     "lib": [
       "dom",
       "dom.iterable",
