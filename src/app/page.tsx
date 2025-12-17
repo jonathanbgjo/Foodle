@@ -1,5 +1,4 @@
 import Link from "next/link";
-export const dynamic = "force-dynamic";
 
 async function getRecent() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL ?? ""}/api/recipes`, {

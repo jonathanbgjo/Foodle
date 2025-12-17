@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db/prisma";
+export const dynamic = "force-dynamic";
 
 export default async function RecipesPage() {
   const recipes = await prisma.recipeRecord.findMany({
