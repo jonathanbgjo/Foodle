@@ -1,4 +1,5 @@
-import cheerio from "cheerio";
+import { load } from "cheerio";
+
 import { fetchHtml, extractUrls } from "./http";
 import { guessPlatform } from "./platform";
 
@@ -56,7 +57,7 @@ export async function resolveRecipeSource(inputUrl: string): Promise<ResolveResu
   const platform = guessPlatform(inputUrl);
 
   const html = await fetchHtml(inputUrl);
-  const $ = cheerio.load(html);
+  const $ = load(html);
 
   // best-effort visible text
   const bodyText = $("body").text().replace(/\s+/g, " ").trim();
@@ -110,7 +111,7 @@ export async function resolveRecipeSource(inputUrl: string): Promise<ResolveResu
       // ignore
     }
   }
-
+  
   return {
     platform,
     extractedText: combinedText.slice(0, 50_000), // cap for safety
@@ -118,4 +119,25 @@ export async function resolveRecipeSource(inputUrl: string): Promise<ResolveResu
     resolvedRecipeUrl,
     needsManualLink: mentionsLinkInBio && !resolvedRecipeUrl,
   };
+}
+
+export function normalizeYouTubeUrl(input: string) {
+  try {
+    const u = new URL(input);
+
+    // shorts: /shorts/<id>
+    const m = u.pathname.match(/^\/shorts\/([a-zA-Z0-9_-]{6,})/);
+    if (m) {
+      const id = m[1];
+      return { videoId: id, watchUrl: `https://www.youtube.com/watch?v=${id}` };
+    }
+
+    // watch?v=<id>
+    const v = u.searchParams.get("v");
+    if (v) return { videoId: v, watchUrl: `https://www.youtube.com/watch?v=${v}` };
+
+    return { videoId: null, watchUrl: input };
+  } catch {
+    return { videoId: null, watchUrl: input };
+  }
 }

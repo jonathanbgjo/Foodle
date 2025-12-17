@@ -8,54 +8,69 @@ async function getRecent() {
   return res.json();
 }
 
-export default async function Page() {
-  const data = await getRecent();
-
+export default function HomePage() {
   return (
-    <main style={{ maxWidth: 900, margin: "40px auto", padding: 16, fontFamily: "system-ui" }}>
-      <h1>AI Recipe Extractor (MVP)</h1>
+    <main style={{ maxWidth: 720, margin: "40px auto", padding: 16 }}>
+      <h1 style={{ fontSize: 28, fontWeight: 600 }}>
+        AI Recipe Extractor
+      </h1>
 
-      <section style={{ marginTop: 24, padding: 16, border: "1px solid #ddd", borderRadius: 12 }}>
-        <h2>Extract from a link</h2>
-        <p style={{ color: "#444" }}>
-          Paste a YouTube Short / Instagram Reel link or a recipe page link. MVP prioritizes finding
-          a recipe URL and scraping it. “Link in bio” may require manual link in Phase 2.
-        </p>
+      <p style={{ marginTop: 8, color: "#666" }}>
+        Paste a YouTube Shorts or Instagram Reel link and extract the recipe.
+      </p>
 
-        <form action="/recipes/extract" method="GET" style={{ display: "flex", gap: 8, marginTop: 12 }}>
-          <input
-            name="url"
-            placeholder="Paste link here…"
-            style={{ flex: 1, padding: 10, borderRadius: 10, border: "1px solid #ccc" }}
-          />
-          <button style={{ padding: "10px 14px", borderRadius: 10, border: "1px solid #ccc" }}>
-            Extract
-          </button>
-        </form>
-      </section>
+      <form
+        action="/recipes/extract"
+        method="get"
+        style={{ marginTop: 24 }}
+      >
+        <label
+          htmlFor="url"
+          style={{ display: "block", fontWeight: 500, marginBottom: 6 }}
+        >
+          Video URL
+        </label>
 
-      <section style={{ marginTop: 28 }}>
-        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
-          <h2>Recent</h2>
-          <Link href="/recipes">View all</Link>
-        </div>
+        <input
+          id="url"
+          name="url"
+          type="url"
+          required
+          placeholder="https://www.youtube.com/shorts/..."
+          style={{
+            width: "100%",
+            padding: "10px 12px",
+            fontSize: 16,
+            borderRadius: 6,
+            border: "1px solid #ccc",
+          }}
+        />
 
-        <ul style={{ listStyle: "none", padding: 0, marginTop: 10 }}>
-          {data.records.slice(0, 10).map((r: any) => (
-            <li key={r.id} style={{ padding: 12, borderBottom: "1px solid #eee" }}>
-              <Link href={`/recipes/${r.id}`} style={{ fontWeight: 600 }}>
-                {r.title}
-              </Link>
-              <div style={{ color: "#555", marginTop: 4 }}>
-                {r.cuisine ?? "Unknown cuisine"} • {r.mealType ?? "Unknown meal type"}
-              </div>
-              <div style={{ color: "#777", marginTop: 4, fontSize: 13 }}>
-                {new Date(r.createdAt).toLocaleString()}
-              </div>
-            </li>
-          ))}
-        </ul>
-      </section>
+        <button
+          type="submit"
+          style={{
+            marginTop: 16,
+            padding: "10px 16px",
+            fontSize: 16,
+            borderRadius: 6,
+            border: "none",
+            background: "#111",
+            color: "#fff",
+            cursor: "pointer",
+          }}
+        >
+          Extract Recipe
+        </button>
+      </form>
+
+      <hr style={{ margin: "40px 0" }} />
+
+      <a
+        href="/recipes"
+        style={{ color: "#0066cc", textDecoration: "underline" }}
+      >
+        View extracted recipes →
+      </a>
     </main>
   );
 }

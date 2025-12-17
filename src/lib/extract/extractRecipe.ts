@@ -8,10 +8,21 @@ const recipeJsonSchema = {
   schema: {
     type: "object",
     additionalProperties: false,
-    required: ["title", "ingredients", "steps", "cuisine", "mealType", "tags"],
+    required: [
+      "title",
+      "servings",
+      "ingredients",
+      "steps",
+      "notes",
+      "cuisine",
+      "mealType",
+      "tags",
+      "source",
+    ],
     properties: {
       title: { type: "string" },
-      servings: { type: ["string", "null"] },
+
+      servings: { anyOf: [{ type: "string" }, { type: "null" }] },
 
       ingredients: {
         type: "array",
@@ -21,9 +32,9 @@ const recipeJsonSchema = {
           required: ["item", "quantity", "unit", "notes"],
           properties: {
             item: { type: "string" },
-            quantity: { type: ["string", "null"] },
-            unit: { type: ["string", "null"] },
-            notes: { type: ["string", "null"] },
+            quantity: { anyOf: [{ type: "string" }, { type: "null" }] },
+            unit: { anyOf: [{ type: "string" }, { type: "null" }] },
+            notes: { anyOf: [{ type: "string" }, { type: "null" }] },
           },
         },
       },
@@ -37,28 +48,38 @@ const recipeJsonSchema = {
           properties: {
             order: { type: "number" },
             instruction: { type: "string" },
-            timeMinutes: { type: ["number", "null"] },
+            timeMinutes: { anyOf: [{ type: "number" }, { type: "null" }] },
           },
         },
       },
 
-      notes: { type: ["array", "null"], items: { type: "string" },
+      notes: {
+        anyOf: [{ type: "null" }, { type: "array", items: { type: "string" } }],
       },
 
-      cuisine: { type: ["string", "null"] },
-      mealType: { type: ["string", "null"] },
+      cuisine: { anyOf: [{ type: "string" }, { type: "null" }] },
+      mealType: { anyOf: [{ type: "string" }, { type: "null" }] },
+
       tags: { type: "array", items: { type: "string" } },
 
       source: {
-        type: ["object", "null"],
-        additionalProperties: false,
-        properties: {
-          url: { type: ["string", "null"] },
-          platform: {
-            type: ["string", "null"],
-            enum: ["youtube", "instagram", "other", null],
+        anyOf: [
+          { type: "null" },
+          {
+            type: "object",
+            additionalProperties: false,
+            required: ["url", "platform"],
+            properties: {
+              url: { anyOf: [{ type: "string" }, { type: "null" }] },
+              platform: {
+                anyOf: [
+                  { type: "null" },
+                  { type: "string", enum: ["youtube", "instagram", "other"] },
+                ],
+              },
+            },
           },
-        },
+        ],
       },
     },
   },
@@ -87,7 +108,9 @@ export async function extractRecipeFromPageText(params: {
     {
       role: "user" as const,
       content: [
-        params.sourceUrl ? `Source URL: ${params.sourceUrl}` : "Source URL: (not provided)",
+        params.sourceUrl
+          ? `Source URL: ${params.sourceUrl}`
+          : "Source URL: (not provided)",
         "\nPAGE TEXT:\n",
         params.pageText.slice(0, 60_000),
       ].join("\n"),
@@ -111,6 +134,9 @@ export async function extractRecipeFromPageText(params: {
   if (!text) throw new Error("No output from model");
 
   const parsed = JSON.parse(text) as Recipe;
-  parsed.source = parsed.source ?? { url: params.sourceUrl ?? null, platform: "other" };
+  parsed.source = parsed.source ?? {
+    url: params.sourceUrl ?? null,
+    platform: "other",
+  };
   return parsed;
 }
