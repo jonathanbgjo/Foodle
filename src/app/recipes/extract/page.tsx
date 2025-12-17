@@ -1,29 +1,34 @@
-import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 
-async function extract(url: string) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
-  const res = await fetch("/api/extract", {
-  method: "POST",
-  headers: { "content-type": "application/json" },
-  body: JSON.stringify({ url }),
-  cache: "no-store",
-});
-
-
-  const text = await res.text();
-  if (!res.ok) throw new Error(`Extract failed (${res.status}): ${text.slice(0, 300)}`);
-
-  const json = JSON.parse(text);
-  return json.id as string;
-}
-
-export default async function ExtractPage(props: {
+export default async function ExtractPage({
+  searchParams,
+}: {
   searchParams: Promise<{ url?: string }>;
 }) {
-  const { url } = await props.searchParams;
+  const { url } = await searchParams;
+  if (!url) throw new Error("Missing url");
 
-  if (!url) redirect("/");
+  const h = await headers();
+  const host = h.get("host");
+  const proto = h.get("x-forwarded-proto") ?? "https";
+  const baseUrl = `${proto}://${host}`;
 
-  const id = await extract(url);
-  redirect(`/recipes/${id}`);
+  const res = await fetch(`${baseUrl}/api/extract`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ url }),
+    cache: "no-store",
+  });
+
+  const text = await res.text();
+  if (!res.ok) {
+    throw new Error(`Extract failed (${res.status}): ${text.slice(0, 300)}`);
+  }
+
+  const { id } = JSON.parse(text) as { id: string };
+
+  // redirect to recipe page
+  return (
+    <meta httpEquiv="refresh" content={`0; url=/recipes/${id}`} />
+  );
 }
