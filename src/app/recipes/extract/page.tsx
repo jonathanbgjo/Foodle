@@ -2,12 +2,13 @@ import { redirect } from "next/navigation";
 
 async function extract(url: string) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
-  const res = await fetch(`${baseUrl}/api/extract`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ url }),
-    cache: "no-store",
-  });
+  const res = await fetch("/api/extract", {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({ url }),
+  cache: "no-store",
+});
+
 
   const text = await res.text();
   if (!res.ok) throw new Error(`Extract failed (${res.status}): ${text.slice(0, 300)}`);
